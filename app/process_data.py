@@ -1,4 +1,6 @@
 import pandas as pd
+import logging
+logger = logging.getLogger(__name__)
 
 # Simple category mapping for now — we can expand this later
 CATEGORY_MAP = {
@@ -51,30 +53,47 @@ def hour_label(h):
     return "Late Night (10 PM – 12 AM)"
 
 def process_dataframe(df: pd.DataFrame):
-    # Ensure created_date is a datetime
-    df["created_date"] = pd.to_datetime(df["created_date"], errors="coerce")
+    logger.info("Starting data processing...")
+    logger.info(f"Initial DataFrame shape: {df.shape}")
 
-    # Normalize borough
-    df["borough"] = df["borough"].str.upper().fillna("UNKNOWN")
+    try:
+        # Ensure created_date is a datetime
+        df["created_date"] = pd.to_datetime(df["created_date"], errors="coerce")
+        logger.info("Converted created_date to datetime.")
 
-    # Add numeric hour
-    df["hour_of_day"] = df["created_date"].dt.hour
+        # Normalize borough
+        df["borough"] = df["borough"].str.upper().fillna("UNKNOWN")
+        logger.info("Normalized borough values.")
 
-    # Add human-friendly time bucket
-    df["time_bucket"] = df["hour_of_day"].apply(time_bucket)
+        # Add numeric hour
+        df["hour_of_day"] = df["created_date"].dt.hour
+        logger.info("Extracted hour_of_day.")
 
-    # Add fully descriptive label
-    df["hour_label"] = df["hour_of_day"].apply(hour_label)
+        # Add human-friendly time bucket
+        df["time_bucket"] = df["hour_of_day"].apply(time_bucket)
+        logger.info("Added time_bucket feature.")
 
-    # Add day-of-week features
-    df["day_of_week"] = df["created_date"].dt.day_name()
-    df["is_weekend"] = df["day_of_week"].isin(["Saturday", "Sunday"])
+        # Add fully descriptive label
+        df["hour_label"] = df["hour_of_day"].apply(hour_label)
+        logger.info("Added hour_label feature.")
 
-    # Add category
-    df["category"] = df.apply(
-        lambda row: categorize_complaint(row.get("complaint_type", ""), row.get("descriptor", "")),
-        axis=1
-    )
+        # Add day-of-week features
+        df["day_of_week"] = df["created_date"].dt.day_name()
+        df["is_weekend"] = df["day_of_week"].isin(["Saturday", "Sunday"])
+        logger.info("Added day_of_week and is_weekend features.")
 
+        # Add category
+        df["category"] = df.apply(
+            lambda row: categorize_complaint(row.get("complaint_type", ""), row.get("descriptor", "")),
+            axis=1
+        )
+        logger.info("Assigned categories to complaints.")
+
+    except Exception as e:
+        logger.exception(f"Error during data processing: {e}")
+        raise
+
+    logger.info(f"Finished processing. Final DataFrame shape: {df.shape}")
     return df
+
 
