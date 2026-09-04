@@ -1,5 +1,5 @@
-requests
-pandas
-flask
-sqlalchemy
-apscheduler
+requests>=2.31.0
+pandas>=2.2.0
+flask>=3.0.0
+sqlalchemy>=2.0.0
+apscheduler>=3.10.0
