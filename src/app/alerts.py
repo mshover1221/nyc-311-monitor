@@ -4,8 +4,8 @@ from datetime import datetime, timedelta
 import pandas as pd
 from sqlalchemy.orm import Session
 
-from app.db import Complaint, SessionLocal
-from app.process_data import process_dataframe
+from src.app.db import Complaint, SessionLocal
+from src.app.process_data import process_dataframe
 
 logger = logging.getLogger(__name__)
 
