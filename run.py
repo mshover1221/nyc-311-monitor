@@ -1,10 +1,13 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 import argparse
 import logging
 
-from app.db import init_db, save_complaints
-from app.fetch_data import fetch_311_data
-from app.process_data import process_dataframe
-from app.alerts import generate_alerts
+from src.app.db import init_db, save_complaints
+from src.app.fetch_data import fetch_311_data
+from src.app.process_data import process_dataframe
+from src.app.alerts import generate_alerts
 
 logger = logging.getLogger(__name__)
 
@@ -55,8 +58,3 @@ if __name__ == "__main__":
         run_alerts_only()
     else:
         run_full_pipeline()
-
-
-
-
-
