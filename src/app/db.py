@@ -1,7 +1,8 @@
 import pandas as pd
 from datetime import datetime
+from src.alerts.new_complaint_alert import run_new_complaint_alert
 
-from sqlalchemy import create_engine, Column, String, DateTime, Float
+from sqlalchemy import create_engine, Column, String, DateTime, Float, Boolean
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 # ----------------------------------
@@ -32,6 +33,10 @@ class Complaint(Base):
     borough = Column(String)
     latitude = Column(Float)
     longitude = Column(Float)
+
+    # NEW FIELDS FOR ALERT SYSTEM
+    alert_sent = Column(Boolean, default=False)
+    alert_sent_at = Column(DateTime, nullable=True)
 
 
 # ----------------------------------
@@ -72,6 +77,9 @@ def save_complaints(df: pd.DataFrame):
             )
 
             session.add(complaint)
+
+            # Fire alert for new complaint (using ORM object)
+            run_new_complaint_alert(complaint, session)
 
         session.commit()
 
