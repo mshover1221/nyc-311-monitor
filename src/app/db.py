@@ -30,6 +30,7 @@ class Complaint(Base):
     agency = Column(String)
     agency_name = Column(String)
     complaint_type = Column(String)
+    category = Column(String)
     descriptor = Column(String)
     borough = Column(String)
     latitude = Column(Float)
@@ -81,6 +82,7 @@ def save_complaints(df: pd.DataFrame):
                 agency=row.get("agency"),
                 agency_name=row.get("agency_name"),
                 complaint_type=row.get("complaint_type"),
+                category=row.get("category"),
                 descriptor=row.get("descriptor"),
                 borough=row.get("borough"),
                 latitude=(

@@ -68,7 +68,8 @@ if __name__ == "__main__":
         windows = backfill(args.backfill)
         failed_windows = []
 
-        for window_start, window_end in windows:
+        for i, (window_start, window_end) in enumerate(windows, start=1):
+            print(f"Backfill progress: {i}/{len(windows)} — {window_start.date()}")
             try:
                 logger.info(
                     f"Fetching window: {window_start} → {window_end}"
