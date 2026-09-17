@@ -98,3 +98,17 @@ def is_unusual(
         return False
 
     return current_count > threshold
+
+def evaluate_conditions(session, start_time, end_time, conditions):
+    results = []
+
+    for borough, category in conditions:
+        unusual = is_unusual(session, borough, category, start_time, end_time)
+
+        results.append({
+            "borough": borough,
+            "category": category,
+            "unusual": unusual
+        })
+
+    return results
