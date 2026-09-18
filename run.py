@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from src.app.db import init_db, save_complaints
 from src.app.fetch_data import fetch_311_data
 from src.app.process_data import process_dataframe
-from src.app.alerts import generate_alerts
+from src.alerts.runner import run_alert_evaluation
 from src.app.backfill import backfill
 
 logger = logging.getLogger(__name__)
@@ -36,9 +36,9 @@ def run_full_pipeline():
     save_complaints(df)
 
     logger.info("Generating alerts...")
-    alerts = generate_alerts()
+    alert = run_alert_evaluation()
 
-    for alert in alerts:
+    if alert:
         logger.info(f"ALERT: {alert}")
 
     logger.info("Done!")
@@ -47,9 +47,9 @@ def run_full_pipeline():
 def run_alerts_only():
     """Generate alerts using existing DB data."""
     logger.info("Generating alerts from existing DB data...")
-    alerts = generate_alerts()
+    alert = run_alert_evaluation()
 
-    for alert in alerts:
+    if alert:
         logger.info(f"ALERT: {alert}")
 
 

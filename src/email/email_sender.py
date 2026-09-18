@@ -21,7 +21,7 @@ if not FROM_EMAIL:
     raise RuntimeError("SENDGRID_FROM_EMAIL is not set in environment variables")
 
 
-def send_email(subject: str, html_content: str, to_email: str) -> bool:
+def send_email(subject: str, text_content: str, to_email: str) -> bool:
     """
     Send an email using SendGrid.
 
@@ -33,7 +33,7 @@ def send_email(subject: str, html_content: str, to_email: str) -> bool:
         from_email=FROM_EMAIL,
         to_emails=to_email,
         subject=subject,
-        html_content=html_content,
+        plain_text_content=text_content,
     )
 
     try:
