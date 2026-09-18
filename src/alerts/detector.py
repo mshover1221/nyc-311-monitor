@@ -16,7 +16,7 @@ def get_current_count(session, borough, category, start_time, end_time):
     )
 
     return count
-    
+
 
 def get_season(date):
     month = date.month
@@ -99,22 +99,39 @@ def is_unusual(
     threshold = calculate_threshold(historical_counts)
 
     if threshold is None:
-        return False
+        return {
+            "current_count": current_count,
+            "threshold": None,
+            "historical_count": len(historical_counts),
+            "unusual": False
+        }
 
-    return current_count > threshold
+    return {
+        "current_count": current_count,
+        "threshold": threshold,
+        "historical_count": len(historical_counts),
+        "unusual": current_count > threshold
+    }
 
 
 def evaluate_conditions(session, start_time, end_time, conditions):
     results = []
 
     for borough, category in conditions:
-        unusual = is_unusual(session, borough, category, start_time, end_time)
+        result = is_unusual(
+            session,
+            borough,
+            category,
+            start_time,
+            end_time
+        )
 
-        results.append({
+        result.update({
             "borough": borough,
-            "category": category,
-            "unusual": unusual
+            "category": category
         })
+
+        results.append(result)
 
     return results
 

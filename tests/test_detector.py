@@ -7,7 +7,7 @@ def test_calculate_threshold():
     counts = [10, 12, 14, 16, 18]
     threshold = calculate_threshold(counts)
     assert threshold == 17.6
-    
+
 
 def test_evaluate_conditions():
     conditions = [
@@ -16,8 +16,20 @@ def test_evaluate_conditions():
     ]
 
     with patch("src.alerts.detector.is_unusual") as mock_is_unusual:
-
-        mock_is_unusual.side_effect = [False, True]
+        mock_is_unusual.side_effect = [
+            {
+                "current_count": 10,
+                "threshold": 15.0,
+                "historical_count": 52,
+                "unusual": False
+            },
+            {
+                "current_count": 25,
+                "threshold": 18.0,
+                "historical_count": 52,
+                "unusual": True
+            }
+        ]
 
         results = evaluate_conditions(
             None,
@@ -30,11 +42,17 @@ def test_evaluate_conditions():
             {
                 "borough": "BROOKLYN",
                 "category": "Noise",
+                "current_count": 10,
+                "threshold": 15.0,
+                "historical_count": 52,
                 "unusual": False
             },
             {
                 "borough": "QUEENS",
                 "category": "Noise",
+                "current_count": 25,
+                "threshold": 18.0,
+                "historical_count": 52,
                 "unusual": True
             }
         ]
