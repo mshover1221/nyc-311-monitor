@@ -16,6 +16,7 @@ def get_current_count(session, borough, category, start_time, end_time):
     )
 
     return count
+    
 
 def get_season(date):
     month = date.month
@@ -28,6 +29,7 @@ def get_season(date):
         return "Summer"
 
     return "Fall"
+
 
 def get_historical_counts(
     session,
@@ -64,11 +66,13 @@ def get_historical_counts(
 
     return list(counts_by_date.values())
 
+
 def calculate_threshold(counts):
     if not counts:
         return None
 
     return pd.Series(counts).quantile(0.95)
+
 
 def is_unusual(
     session,
@@ -99,6 +103,7 @@ def is_unusual(
 
     return current_count > threshold
 
+
 def evaluate_conditions(session, start_time, end_time, conditions):
     results = []
 
@@ -112,3 +117,8 @@ def evaluate_conditions(session, start_time, end_time, conditions):
         })
 
     return results
+
+
+def get_triggered_conditions(results):
+    return [result for result in results if result.get("unusual") == True]
+
