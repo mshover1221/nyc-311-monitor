@@ -42,6 +42,8 @@ def test_evaluate_conditions():
             {
                 "borough": "BROOKLYN",
                 "category": "Noise",
+                "start_time": None,
+                "end_time": None,
                 "current_count": 10,
                 "threshold": 15.0,
                 "historical_count": 52,
@@ -50,6 +52,8 @@ def test_evaluate_conditions():
             {
                 "borough": "QUEENS",
                 "category": "Noise",
+                "start_time": None,
+                "end_time": None,
                 "current_count": 25,
                 "threshold": 18.0,
                 "historical_count": 52,

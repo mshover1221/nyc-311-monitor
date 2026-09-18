@@ -128,7 +128,9 @@ def evaluate_conditions(session, start_time, end_time, conditions):
 
         result.update({
             "borough": borough,
-            "category": category
+            "category": category,
+            "start_time": start_time,
+            "end_time": end_time
         })
 
         results.append(result)
