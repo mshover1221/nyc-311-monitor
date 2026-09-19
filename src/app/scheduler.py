@@ -11,13 +11,13 @@ logger = logging.getLogger(__name__)
 # Initialize scheduler
 scheduler = BlockingScheduler()
 
-def job_wrapper(job):
-    logger.info("Starting scheduled run...")
+def job_wrapper(job, job_name):
+    logger.info(f"Starting {job_name} scheduled run...")
     try:
         job()
-        logger.info("Run completed successfully.")
+        logger.info(f"{job_name} scheduled run completed successfully.")
     except Exception as e:
-        logger.exception(f"Error during scheduled run: {e}")
+        logger.exception(f"Error during {job_name} scheduled run: {e}")
 
 # Schedule job to run immediately, then every 15 minutes
 def alert_job(now=None):
@@ -34,15 +34,21 @@ scheduler.add_job(
     'interval',
     minutes=15,
     next_run_time=datetime.now(),
-    kwargs={"job": run_ingestion}
-)
+    kwargs={
+        "job": run_ingestion,
+        "job_name": "ingestion",
+        }
+    )
 
 scheduler.add_job(
     job_wrapper,
     'cron',
     minute=5,
-    kwargs={"job": alert_job}
-)
+    kwargs={
+        "job": alert_job,
+        "job_name": "alert evaluation",
+        }
+    )
 
 if __name__ == "__main__":
     logger.info("Scheduler started. Fetching data every 15 minutes...")
