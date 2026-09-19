@@ -1,9 +1,13 @@
+from datetime import datetime
 from unittest.mock import patch
 
 from src.alerts.runner import ALERT_RECIPIENT, run_alert_evaluation
 
 
 def test_run_alert_evaluation_returns_formatted_alert():
+    start_time = datetime(2026, 2, 7, 22, 0)
+    end_time = datetime(2026, 2, 7, 23, 0)
+
     triggered_condition = {
         "borough": "BROOKLYN",
         "category": "Noise",
@@ -23,7 +27,7 @@ def test_run_alert_evaluation_returns_formatted_alert():
         mock_get_triggered.return_value = [triggered_condition]
         mock_format.return_value = "formatted alert"
 
-        result = run_alert_evaluation()
+        result = run_alert_evaluation(start_time, end_time)
 
     assert result == "formatted alert"
     mock_format.assert_called_once_with([triggered_condition])
@@ -35,6 +39,9 @@ def test_run_alert_evaluation_returns_formatted_alert():
 
 
 def test_run_alert_evaluation_returns_none_when_no_alerts():
+    start_time = datetime(2026, 2, 7, 22, 0)
+    end_time = datetime(2026, 2, 7, 23, 0)
+
     with patch("src.alerts.runner.evaluate_conditions"), \
          patch("src.alerts.runner.get_triggered_conditions") as mock_get_triggered, \
          patch("src.alerts.runner.format_alert_text") as mock_format, \
@@ -42,7 +49,7 @@ def test_run_alert_evaluation_returns_none_when_no_alerts():
 
         mock_get_triggered.return_value = []
 
-        result = run_alert_evaluation()
+        result = run_alert_evaluation(start_time, end_time)
 
     assert result is None
     mock_format.assert_not_called()
@@ -50,6 +57,9 @@ def test_run_alert_evaluation_returns_none_when_no_alerts():
 
 
 def test_run_alert_evaluation_raises_when_recipient_is_missing():
+    start_time = datetime(2026, 2, 7, 22, 0)
+    end_time = datetime(2026, 2, 7, 23, 0)
+
     triggered_condition = {
         "borough": "BROOKLYN",
         "category": "Noise",
@@ -71,7 +81,7 @@ def test_run_alert_evaluation_raises_when_recipient_is_missing():
         mock_format.return_value = "formatted alert"
 
         try:
-            run_alert_evaluation()
+            run_alert_evaluation(start_time, end_time)
             assert False, "Expected RuntimeError"
         except RuntimeError as error:
             assert str(error) == (

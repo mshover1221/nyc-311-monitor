@@ -18,14 +18,11 @@ CONDITIONS = [
 ALERT_RECIPIENT = os.getenv("ALERT_RECIPIENT")
 ALERT_SUBJECT = "NYC 311 Alert"
 
-def run_alert_evaluation():
+def run_alert_evaluation(start_time, end_time):
     """Evaluate configured alert conditions and return formatted alert text."""
     session = SessionLocal()
 
     try:
-        end_time = datetime.now()
-        start_time = end_time - timedelta(hours=1)
-
         results = evaluate_conditions(
             session,
             start_time,

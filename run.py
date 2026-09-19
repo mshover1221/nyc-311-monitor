@@ -16,13 +16,9 @@ from src.app.backfill import backfill
 logger = logging.getLogger(__name__)
 
 
-def main():
-    """Entry point used by the scheduler."""
-    run_full_pipeline()
+def run_ingestion():
+    """Fetch, process, and save recent complaints."""
 
-
-def run_full_pipeline():
-    """Fetch, process, save complaints, then generate alerts."""
     now = datetime.now()
     start = now - timedelta(minutes=15)
 
@@ -35,19 +31,11 @@ def run_full_pipeline():
     logger.info("Saving complaints...")
     save_complaints(df)
 
-    logger.info("Generating alerts...")
-    alert = run_alert_evaluation()
 
-    if alert:
-        logger.info(f"ALERT: {alert}")
-
-    logger.info("Done!")
-
-
-def run_alerts_only():
+def run_alerts_only(start_time, end_time):
     """Generate alerts using existing DB data."""
     logger.info("Generating alerts from existing DB data...")
-    alert = run_alert_evaluation()
+    alert = run_alert_evaluation(start_time, end_time)
 
     if alert:
         logger.info(f"ALERT: {alert}")
@@ -55,7 +43,6 @@ def run_alerts_only():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--run-alerts", action="store_true")
     parser.add_argument("--backfill", type=int, metavar="DAYS")
     args = parser.parse_args()
 
@@ -70,6 +57,7 @@ if __name__ == "__main__":
 
         for i, (window_start, window_end) in enumerate(windows, start=1):
             print(f"Backfill progress: {i}/{len(windows)} — {window_start.date()}")
+
             try:
                 logger.info(
                     f"Fetching window: {window_start} → {window_end}"
@@ -95,10 +83,4 @@ if __name__ == "__main__":
             logger.warning("Failed windows:")
             for window_start, window_end in failed_windows:
                 logger.warning(f"{window_start} → {window_end}")
-
-    elif args.run_alerts:
-        run_alerts_only()
-
-    else:
-        run_full_pipeline()
 
