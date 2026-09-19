@@ -18,6 +18,7 @@ CONDITIONS = [
 ALERT_RECIPIENT = os.getenv("ALERT_RECIPIENT")
 ALERT_SUBJECT = "NYC 311 Alert"
 
+
 def run_alert_evaluation(start_time, end_time):
     """Evaluate configured alert conditions and return formatted alert text."""
     session = SessionLocal()
@@ -38,13 +39,18 @@ def run_alert_evaluation(start_time, end_time):
         alert_text = format_alert_text(triggered_conditions)
 
         if not ALERT_RECIPIENT:
-            raise RuntimeError("ALERT_RECIPIENT is not set in environment variables")
+            raise RuntimeError(
+                "ALERT_RECIPIENT is not set in environment variables"
+            )
 
-        send_email(
+        email_sent = send_email(
             ALERT_SUBJECT,
             alert_text,
             ALERT_RECIPIENT,
         )
+
+        if not email_sent:
+            raise RuntimeError("Failed to send alert email")
 
         return alert_text
 
