@@ -19,18 +19,28 @@ logger = logging.getLogger(__name__)
 def run_ingestion():
     """Fetch, process, and save recent complaints."""
 
+    max_attempts = 2
+
     now = datetime.now()
     start = now - timedelta(minutes=15)
 
-    logger.info(f"Fetching data from {start} to {now}...")
-    df = fetch_311_data(start, now)
+    for attempt in range(max_attempts):
+        try:
+            logger.info(f"Fetching data from {start} to {now}...")
+            df = fetch_311_data(start, now)
 
-    logger.info("Processing data...")
-    df = process_dataframe(df)
+            logger.info("Processing data...")
+            df = process_dataframe(df)
 
-    logger.info("Saving complaints...")
-    save_complaints(df)
+            logger.info("Saving complaints...")
+            save_complaints(df)
+            break
 
+        except Exception:
+            if attempt == max_attempts - 1:
+                raise
+
+            logger.warning(f"Ingestion attempt {attempt + 1} failed. Retrying...")
 
 def run_alerts_only(start_time, end_time):
     """Generate alerts using existing DB data."""
