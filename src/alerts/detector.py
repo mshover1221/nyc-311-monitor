@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from sqlalchemy import func
 import pandas as pd
 from src.app.db import Complaint
@@ -37,11 +39,14 @@ def get_historical_counts(
     category,
     start_time,
 ):
+    historical_start = start_time - timedelta(days=365)
+
     rows = (
         session.query(Complaint.created_date)
         .filter(
             Complaint.borough == borough,
             Complaint.category == category,
+            Complaint.created_date >= historical_start,
             Complaint.created_date < start_time,
         )
         .all()
@@ -64,7 +69,23 @@ def get_historical_counts(
             date_key = created.date()
             counts_by_date[date_key] = counts_by_date.get(date_key, 0) + 1
 
-    return list(counts_by_date.values())
+    historical_dates = []
+
+    current_date = historical_start.date()
+
+    while current_date < start_time.date():
+        if (
+            current_date.weekday() == current_weekday
+            and get_season(current_date) == current_season
+        ):
+            historical_dates.append(current_date)
+
+        current_date += timedelta(days=1)
+
+    return [
+        counts_by_date.get(date, 0)
+        for date in historical_dates
+    ]
 
 
 def calculate_threshold(counts):

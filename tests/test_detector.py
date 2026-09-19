@@ -1,6 +1,9 @@
+from datetime import datetime
 from unittest.mock import patch
+
 from src.alerts.detector import calculate_threshold
 from src.alerts.detector import evaluate_conditions
+from src.alerts.detector import get_historical_counts
 from src.alerts.detector import get_triggered_conditions
 
 def test_calculate_threshold():
@@ -75,4 +78,41 @@ def test_get_triggered_conditions():
         {"borough": "BROOKLYN", "category": "Water System", "unusual": True},
         {"borough": "QUEENS", "category": "Noise", "unusual": True},
     ]
+
+
+def test_get_historical_counts_includes_zero_periods():
+    class FakeRow:
+        def __init__(self, created_date):
+            self.created_date = created_date
+
+    fake_rows = [
+        FakeRow(datetime(2026, 7, 4, 22, 15)),
+        FakeRow(datetime(2026, 7, 4, 22, 30)),
+        FakeRow(datetime(2026, 7, 18, 22, 5)),
+        FakeRow(datetime(2026, 7, 18, 22, 40)),
+        FakeRow(datetime(2026, 7, 18, 22, 55)),
+    ]
+
+    class FakeQuery:
+        def filter(self, *args):
+            return self
+
+        def all(self):
+            return fake_rows
+
+    class FakeSession:
+        def query(self, *args):
+            return FakeQuery()
+
+    result = get_historical_counts(
+        FakeSession(),
+        "BROOKLYN",
+        "Water System",
+        datetime(2026, 7, 25, 22),
+    )
+
+    assert len(result) == 13
+    assert result.count(0) == 11
+    assert 2 in result
+    assert 3 in result
 
