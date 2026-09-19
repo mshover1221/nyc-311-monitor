@@ -117,6 +117,19 @@ def is_unusual(
         start_time,
 )
 
+    nonzero_historical_count = sum(
+        count > 0 for count in historical_counts
+    )
+
+    if nonzero_historical_count < 3:
+        return {
+            "current_count": current_count,
+            "threshold": None,
+            "historical_count": len(historical_counts),
+            "nonzero_historical_count": nonzero_historical_count,
+            "unusual": False,
+        }
+
     threshold = calculate_threshold(historical_counts)
 
     if threshold is None:
@@ -124,6 +137,7 @@ def is_unusual(
             "current_count": current_count,
             "threshold": None,
             "historical_count": len(historical_counts),
+            "nonzero_historical_count": nonzero_historical_count,
             "unusual": False
         }
 
@@ -131,6 +145,7 @@ def is_unusual(
         "current_count": current_count,
         "threshold": threshold,
         "historical_count": len(historical_counts),
+        "nonzero_historical_count": nonzero_historical_count,
         "unusual": current_count > threshold
     }
 

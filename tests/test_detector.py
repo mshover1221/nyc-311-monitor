@@ -116,3 +116,54 @@ def test_get_historical_counts_includes_zero_periods():
     assert 2 in result
     assert 3 in result
 
+
+def test_is_unusual_skips_sparse_history():
+    from src.alerts.detector import is_unusual
+
+    historical_counts = [0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+    with patch(
+        "src.alerts.detector.get_current_count",
+        return_value=10,
+    ), patch(
+        "src.alerts.detector.get_historical_counts",
+        return_value=historical_counts,
+    ):
+        result = is_unusual(
+            None,
+            "BROOKLYN",
+            "Rodents",
+            datetime(2026, 7, 25, 22),
+            datetime(2026, 7, 25, 23),
+        )
+
+    assert result["current_count"] == 10
+    assert result["historical_count"] == 13
+    assert result["nonzero_historical_count"] == 1
+    assert result["threshold"] is None
+    assert result["unusual"] is False
+
+
+def test_is_unusual_allows_three_nonzero_periods():
+    from src.alerts.detector import is_unusual
+
+    historical_counts = [0, 0, 5, 0, 8, 0, 0, 12, 0, 0, 0, 0, 0]
+
+    with patch(
+        "src.alerts.detector.get_current_count",
+        return_value=20,
+    ), patch(
+        "src.alerts.detector.get_historical_counts",
+        return_value=historical_counts,
+    ):
+        result = is_unusual(
+            None,
+            "BROOKLYN",
+            "Rodents",
+            datetime(2026, 7, 25, 22),
+            datetime(2026, 7, 25, 23),
+        )
+
+    assert result["nonzero_historical_count"] == 3
+    assert result["threshold"] is not None
+    assert result["unusual"] is True
