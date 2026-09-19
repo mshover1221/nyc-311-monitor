@@ -92,7 +92,7 @@ def calculate_threshold(counts):
     if not counts:
         return None
 
-    return pd.Series(counts).quantile(0.95)
+    return pd.Series(counts).quantile(0.95).item()
 
 
 def is_unusual(
