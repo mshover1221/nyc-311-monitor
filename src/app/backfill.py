@@ -34,7 +34,15 @@ def get_daily_windows(start, end):
     return windows
 
 
-def backfill(days):
-    start, end = get_backfill_range(days)
+def backfill(days=None, start=None, end=None):
+    if days is not None and (start is not None or end is not None):
+        raise ValueError("Provide either days or start and end, not both.")
+    elif start is not None and end is not None:
+        pass
+    elif days is not None:
+        start, end = get_backfill_range(days)
+    else:
+        raise ValueError("Provide either days or both start and end.")
+
     return get_daily_windows(start, end)
 
