@@ -54,15 +54,24 @@ def run_alerts_only(start_time, end_time):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--backfill", type=int, metavar="DAYS")
+    parser.add_argument("--backfill-start")
+    parser.add_argument("--backfill-end")
     args = parser.parse_args()
 
     print("Initializing database...")
     init_db()
 
-    if args.backfill:
-        logger.info(f"Running {args.backfill}-day backfill...")
+    if args.backfill or (args.backfill_start and args.backfill_end):
+        if args.backfill:
+            logger.info(f"Running {args.backfill}-day backfill...")
+            windows = backfill(args.backfill)
 
-        windows = backfill(args.backfill)
+        else:
+            start = datetime.fromisoformat(args.backfill_start)
+            end = datetime.fromisoformat(args.backfill_end)
+
+            logger.info(f"Running backfill from {start} to {end}...")
+            windows = backfill(start=start, end=end)
         failed_windows = []
 
         for i, (window_start, window_end) in enumerate(windows, start=1):

@@ -2,7 +2,7 @@
 
 import pandas as pd
 
-from sqlalchemy import create_engine, Column, String, DateTime, Float
+from sqlalchemy import create_engine, Column, String, DateTime, Float, func
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 
@@ -26,7 +26,7 @@ class Complaint(Base):
     __tablename__ = "complaints"
 
     unique_key = Column(String, primary_key=True)
-    created_date = Column(DateTime)
+    created_date = Column(DateTime, index=True)
     agency = Column(String)
     agency_name = Column(String)
     complaint_type = Column(String)
@@ -144,3 +144,105 @@ def load_complaints():
     finally:
         session.close()
 
+
+def get_total_complaints():
+    """Return the count of total complaints"""
+
+    session = SessionLocal()
+
+    try:
+        count = session.query(Complaint).count()
+
+        return count
+
+    finally:
+        session.close()
+
+
+def get_complaint_count(start_time, end_time):
+    """Get complaint count for a specific date range."""
+
+    session = SessionLocal()
+
+    try:
+        count_range = (
+            session.query(Complaint)
+            .filter(
+                Complaint.created_date >= start_time,
+                Complaint.created_date < end_time,
+            )
+            .count()
+        )
+
+        return count_range
+
+    finally:
+        session.close()
+
+
+def get_latest_complaint_date():
+    """Get the timestamp of the most recent complaint in the database."""
+
+    session = SessionLocal()
+
+    try:
+        latest_timestamp = (
+            session.query(Complaint.created_date)
+            .order_by(Complaint.created_date.desc())
+            .first()
+        )
+
+        return latest_timestamp[0] if latest_timestamp else None
+
+    finally:
+        session.close()
+
+
+def get_daily_complaint_counts(start_time, end_time):
+    """Get the number of complaints for each day in a date range."""
+
+    session = SessionLocal()
+
+    try:
+        daily_counts = (
+            session.query(
+                func.date(Complaint.created_date),
+                func.count(Complaint.unique_key),
+            )
+            .filter(
+                Complaint.created_date >= start_time,
+                Complaint.created_date < end_time,
+            )
+            .group_by(func.date(Complaint.created_date))
+            .order_by(func.date(Complaint.created_date))
+        )
+
+        return daily_counts.all()
+
+    finally:
+        session.close()
+
+
+def get_category_counts(start_time, end_time):
+    """Get complaint counts by category for a date range."""
+
+    session = SessionLocal()
+
+    try:
+        category_counts = (
+            session.query(
+                Complaint.category,
+                func.count(Complaint.unique_key),
+            )
+            .filter(
+                Complaint.created_date >= start_time,
+                Complaint.created_date < end_time,
+            )
+            .group_by(Complaint.category)
+            .order_by(func.count(Complaint.unique_key).desc())
+        )
+
+        return category_counts.all()
+
+    finally:
+        session.close()
