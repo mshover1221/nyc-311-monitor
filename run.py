@@ -22,7 +22,7 @@ def run_ingestion():
     max_attempts = 2
 
     now = datetime.now()
-    start = now - timedelta(minutes=15)
+    start = now - timedelta(minutes=30)
 
     for attempt in range(max_attempts):
         try:
