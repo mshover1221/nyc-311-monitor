@@ -198,21 +198,27 @@ def get_latest_complaint_date():
         session.close()
 
 
-def get_daily_complaint_counts(start_time, end_time):
+
+def get_daily_complaint_counts(start_time, end_time, borough=None):
     """Get the number of complaints for each day in a date range."""
 
     session = SessionLocal()
 
     try:
+        filters = [
+            Complaint.created_date >= start_time,
+            Complaint.created_date < end_time,
+        ]
+
+        if borough:
+            filters.append(Complaint.borough == borough)
+
         daily_counts = (
             session.query(
                 func.date(Complaint.created_date),
                 func.count(Complaint.unique_key),
             )
-            .filter(
-                Complaint.created_date >= start_time,
-                Complaint.created_date < end_time,
-            )
+            .filter(*filters)
             .group_by(func.date(Complaint.created_date))
             .order_by(func.date(Complaint.created_date))
         )
@@ -223,21 +229,27 @@ def get_daily_complaint_counts(start_time, end_time):
         session.close()
 
 
-def get_category_counts(start_time, end_time):
+
+def get_category_counts(start_time, end_time, borough=None):
     """Get complaint counts by category for a date range."""
 
     session = SessionLocal()
 
     try:
+        filters = [
+            Complaint.created_date >= start_time,
+            Complaint.created_date < end_time,
+        ]
+
+        if borough:
+            filters.append(Complaint.borough == borough)
+
         category_counts = (
             session.query(
                 Complaint.category,
                 func.count(Complaint.unique_key),
             )
-            .filter(
-                Complaint.created_date >= start_time,
-                Complaint.created_date < end_time,
-            )
+            .filter(*filters)
             .group_by(Complaint.category)
             .order_by(func.count(Complaint.unique_key).desc())
         )
