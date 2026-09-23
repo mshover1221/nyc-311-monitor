@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from sqlalchemy import func
 import pandas as pd
@@ -41,33 +41,37 @@ def get_historical_counts(
 ):
     historical_start = start_time - timedelta(days=365)
 
+    current_season = get_season(start_time)
+    current_hour = start_time.hour
+    current_weekday = start_time.weekday()
+
     rows = (
-        session.query(Complaint.created_date)
+        session.query(
+            func.date(Complaint.created_date).label("date"),
+            func.count(Complaint.unique_key).label("count"),
+        )
         .filter(
             Complaint.borough == borough,
             Complaint.category == category,
             Complaint.created_date >= historical_start,
             Complaint.created_date < start_time,
+            func.strftime("%H", Complaint.created_date)
+            == f"{current_hour:02d}",
         )
+        .group_by(func.date(Complaint.created_date))
         .all()
     )
-
-    current_season = get_season(start_time)
-    current_hour = start_time.hour
-    current_weekday = start_time.weekday()
 
     counts_by_date = {}
 
     for row in rows:
-        created = row.created_date
+        date_key = datetime.fromisoformat(row.date).date()
 
         if (
-            created.hour == current_hour
-            and created.weekday() == current_weekday
-            and get_season(created) == current_season
+            date_key.weekday() == current_weekday
+            and get_season(date_key) == current_season
         ):
-            date_key = created.date()
-            counts_by_date[date_key] = counts_by_date.get(date_key, 0) + 1
+            counts_by_date[date_key] = row.count
 
     historical_dates = []
 
